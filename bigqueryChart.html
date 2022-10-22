@@ -1,0 +1,120 @@
+<html>
+  <head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+
+  </head>
+  <body>
+        <script src='https://apis.google.com/js/client.js'></script>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <div id="g_id_onload"
+             data-client_id="624576838672-ocngvcla85823lpho4k7af15ti5dn2p7.apps.googleusercontent.com"
+             data-login_uri="http://localhost:8080"
+             data-callback="handleCredentialResponse">
+        </div>
+
+    <div id="map"></div>
+    <script>
+        var client;
+
+        function initClient() {
+            console.log('init client');
+            client = google.accounts.oauth2.initTokenClient({
+              client_id: '624576838672-ocngvcla85823lpho4k7af15ti5dn2p7.apps.googleusercontent.com',
+              scope: 'https://www.googleapis.com/auth/bigquery',
+              callback: (tokenResponse) => {
+                getQueryResults();
+              },
+            });
+            client.requestAccessToken();
+        }
+
+        function handleCredentialResponse(authResult) {
+            console.info(authResult);
+            initClient();
+            if (authResult && !authResult.error) {
+              loadApi();
+              return;
+            }
+            console.error('Not authorized.')
+        }
+
+        function loadApi(){
+            console.log('load api');
+            gapi.client.load('bigquery', 'v2').then(
+             () => creaJSON()
+            );
+        }
+
+        let map;
+        let datasetId = 'ATM';
+        let billingProjectId = 'bbva-latam-hack22mex-5001';
+        let publicProjectId = 'bbva-latam-hack22mex-5001';
+        let tableName = 'TABLA_ATM';
+        let tableName2 = 'TABLA_FALLAS';
+
+        function sendQuery(queryString){
+          let request = gapi.client.bigquery.jobs.query({
+              'query': queryString,
+              'timeoutMs': 30000,
+              'datasetId': datasetId,
+              'projectId': billingProjectId,
+              'useLegacySql':false
+          });         
+          request.execute(response => {
+              armaJSON(response.result.rows)
+          });
+        }
+        function armaJSON(rows){
+          console.log("rows.length == "+ rows.length)
+          for (let i = 0; i < rows.length; i++) {
+              let f = rows[i].f;
+              if (f[1].v !== null && f[2].v !== null) {
+                console.log(f[1].v + " # "+ f[2].v);                
+              }
+          }
+
+        }
+
+        function getQueryResults(){
+          sendQuery(buildSQL());
+        }
+
+        function buildSQL(){
+          /*
+          let queryString = 'SELECT ATM, Latitud, Longitud '
+          queryString +=  'FROM `' + publicProjectId +'.' + datasetId + '.' + tableName + '` '
+          return queryString;
+          */
+          let queryString = 'SELECT a.ATM, a.Latitud, a.Longitud '
+          queryString +=  'FROM `' + publicProjectId +'.' + datasetId + '.' + tableName + '` '
+          queryString += 'as a, '
+          queryString +=  ' `' + publicProjectId +'.' + datasetId + '.' + tableName2 + '` '
+          queryString += 'as f ' 
+          queryString += 'where a.ATM = f.ATM_ID'     
+          console.log(queryString)     
+          return queryString;
+
+        }
+
+        </script>        
+        <script src='https://apis.google.com/js/client.js'></script>
+  </body>
+</html>
+
+
