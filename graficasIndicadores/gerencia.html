@@ -1,0 +1,441 @@
+<html>
+    <head>
+        <link REL=StyleSheet href="_css/estiloGerencia.css" type="text/css" media=screen>
+
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+        <script src="https://code.highcharts.com/modules/export-data.js"></script>
+        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+        <script src="https://code.highcharts.com/highcharts-more.js"></script>
+        <style>
+            /* Always set the map height explicitly to define the size of the div
+             * element that contains the map. */
+            #map {
+              width:650px;
+              height: 400px;
+            }
+            /* Optional: Makes the sample page fill the window. */
+            html, body {
+              
+              margin: 0;
+              padding: 0;
+            }
+          </style>  
+    </head>        
+    <body>
+        
+        <script src='https://apis.google.com/js/client.js'></script>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <div id="g_id_onload"
+             data-client_id="624576838672-ocngvcla85823lpho4k7af15ti5dn2p7.apps.googleusercontent.com"
+             data-login_uri="http://localhost:8080"
+             data-callback="handleCredentialResponse">
+        </div>     
+        <figure class="highcharts-figure">
+            <div id="transaccionesPorTipo"></div>
+        </figure>
+        <figure class="highcharts-figure">
+            <div id="depositosPorDivision"></div>
+        </figure>
+        
+        <figure class="highcharts-figure">
+            <div id="retirosPorDivision"></div>
+        </figure>
+        
+        <figure class="highcharts-figure">
+            <div id="Top5TransaEstados"></div>
+        </figure>
+        
+        <figure class="highcharts-figure">
+            <div id="fallasRegionEstado"></div>
+        </figure>  
+        <div id="map"></div>
+        <script>
+            var client;
+    
+            function initClient() {
+                console.log('init client');
+                client = google.accounts.oauth2.initTokenClient({
+                  client_id: '624576838672-ocngvcla85823lpho4k7af15ti5dn2p7.apps.googleusercontent.com',
+                  scope: 'https://www.googleapis.com/auth/bigquery',
+                  callback: (tokenResponse) => {
+                    getQueryResults();
+                  },
+                });
+                client.requestAccessToken();
+            }
+    
+            function handleCredentialResponse(authResult) {
+                console.info(authResult);
+                initClient();
+                if (authResult && !authResult.error) {
+                  loadApi();
+                  return;
+                }
+                console.error('Not authorized.')
+            }
+    
+            function loadApi(){
+                console.log('load api');
+                gapi.client.load('bigquery', 'v2').then(
+                 () => initMap()
+                );
+            }
+    
+            let map;
+    
+            function initMap() {
+                map = new google.maps.Map(document.getElementById('map'), {
+                  center: {lat: 24.926677256565032, lng: -103.17133038381827},
+                  zoom: 5
+                });
+            }
+    
+            let datasetId = 'ATM';
+            let billingProjectId = 'bbva-latam-hack22mex-5001';
+            let publicProjectId = 'bbva-latam-hack22mex-5001';
+            let tableName = 'TABLA_ATM';
+            let tableName2 = 'TABLA_FALLAS';
+    
+            function sendQuery(queryString){
+              let request = gapi.client.bigquery.jobs.query({
+                  'query': queryString,
+                  'timeoutMs': 30000,
+                  'datasetId': datasetId,
+                  'projectId': billingProjectId,
+                  'useLegacySql':false
+              });         
+              request.execute(response => {
+                  doHeatMap(response.result.rows)
+              });
+            }
+    
+            let heatmap;
+            function doHeatMap(rows){
+              let heatmapData = [];
+              if (heatmap != null){
+                heatmap.setMap(null);
+              }
+              console.log("rows.length == "+ rows.length)
+              
+             
+              let jsonLatLng = "{["
+              for (let i = 0; i < rows.length; i++) {
+                  let f = rows[i].f;
+                  if (f[1].v !== null && f[2].v !== null) {
+                    let coords = { lat: parseFloat(f[1].v), lng: parseFloat(f[2].v) };
+                    let latLng = new google.maps.LatLng(coords);
+                    jsonLatLng += ' {"lat":'+f[1].v+',"lng":'+f[2].v+'},';
+                    heatmapData.push(latLng);
+                  }
+              }
+              jsonLatLng += "]}"
+              console.log(jsonLatLng);
+              heatmap = new google.maps.visualization.HeatmapLayer({
+                  data: heatmapData
+              });
+              heatmap.setMap(map);
+            }
+    
+            function getQueryResults(){
+              sendQuery(buildSQL());
+            }
+    
+            function buildSQL(){
+              /*
+              let queryString = 'SELECT ATM, Latitud, Longitud '
+              queryString +=  'FROM `' + publicProjectId +'.' + datasetId + '.' + tableName + '` '
+              return queryString;
+              */
+              let queryString = 'SELECT a.ATM, a.Latitud, a.Longitud '
+              queryString +=  'FROM `' + publicProjectId +'.' + datasetId + '.' + tableName + '` '
+              queryString += 'as a, '
+              queryString +=  ' `' + publicProjectId +'.' + datasetId + '.' + tableName2 + '` '
+              queryString += 'as f ' 
+              queryString += 'where a.ATM = f.ATM_ID'     
+              console.log(queryString)     
+              return queryString;
+    
+            }
+    
+            </script>
+            <script src="https://maps.googleapis.com/maps/api/js?libraries=visualization,drawing&key=AIzaSyChhaV-njgLQDbhsbeXKweSpyizRa1ZiRA" async defer></script>
+            <script src='https://apis.google.com/js/client.js'></script>        
+    </body>        
+</html>    
+
+
+
+
+<script>
+
+
+var pieColors = ["#C98200", "#063978", "#85d5e6", "#78909c", "#ffab40", "#0097a7", "#01224A", "#1D69C4", "#FDF7EB", "#5E3F05"]
+
+Highcharts.chart('transaccionesPorTipo', {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Transacciones por tipo'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            colors: pieColors,
+            dataLabels: {
+                enabled: false
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'Brands',
+        colorByPoint: true,
+        data:[{
+                name: 'DEPOSITO',
+                y: 295384
+            },{
+            	name: 'RETIRO',
+  	            y: 1107620
+               }] }]
+});
+
+Highcharts.chart('depositosPorDivision', {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Despósitos por división'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            colors: pieColors,
+            dataLabels: {
+                enabled: false
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'Brands',
+        colorByPoint: true,
+        data:[{
+  name: 'NOROESTE',
+  y: 33196
+}, {
+  name: 'OCCIDENTE',
+  y: 48900
+}, {
+  name: 'BAJIO',
+  y: 36242
+}, {
+  name: 'SUR',
+  y: 40509
+}, {
+  name: 'METROPOLITANA SUR',
+  y: 40103
+}, {
+  name: 'METROPOLITANA NORTE',
+  y: 41708
+}, {
+  name: 'SURESTE',
+  y: 23904
+}, {
+  name: 'NORESTE',
+  y: 30822
+}]
+    }]
+});
+
+Highcharts.chart('retirosPorDivision', {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Retiros por división'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            colors: pieColors,
+            dataLabels: {
+                enabled: false
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'Brands',
+        colorByPoint: true,
+        data:[{
+  name: 'OCCIDENTE',
+  y: 143340
+}, {
+  name: 'METROPOLITANA NORTE',
+  y: 160955
+}, {
+  name: 'NOROESTE',
+  y: 140101
+}, {
+  name: 'SURESTE',
+  y: 94646
+}, {
+  name: 'SUR',
+  y: 149014
+}, {
+  name: 'METROPOLITANA SUR',
+  y: 145509
+}, {
+  name: 'BAJIO',
+  y: 130346
+}, {
+  name: 'NORESTE',
+  y: 143709
+}]
+    }]
+});
+
+Highcharts.chart('Top5TransaEstados', {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Estados con mas transacciones'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            colors: pieColors,
+            dataLabels: {
+                enabled: false
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'Brands',
+        colorByPoint: true,
+        data: [{
+            name: 'Chrome',
+            y: 74.77,
+            sliced: true,
+            selected: true
+        },  {
+            name: 'Edge',
+            y: 12.82
+        },  {
+            name: 'Firefox',
+            y: 4.63
+        }, {
+            name: 'Safari',
+            y: 2.44
+        }, {
+            name: 'Internet Explorer',
+            y: 2.02
+        }, {
+            name: 'Other',
+            y: 3.28
+        }]
+    }]
+});
+
+Highcharts.chart('fallasRegionEstado', {
+    chart: {
+        type: 'packedbubble',
+        height: '100%'
+    },
+    title: {
+        text: 'Fallas por región y estado'
+    },
+    tooltip: {
+        useHTML: true,
+        pointFormat: '<b>{point.name}:</b> {point.value}m CO<sub>2</sub>'
+    },
+    plotOptions: {
+        packedbubble: {
+            minSize: '30%',
+            maxSize: '120%',
+            zMin: 0,
+            zMax: 1000,
+            colors: pieColors,
+            layoutAlgorithm: {
+                splitSeries: false,
+                gravitationalConstant: 0.02
+            },
+            dataLabels: {
+                enabled: true,
+                format: '{point.name}',
+                filter: {
+                    property: 'y',
+                    operator: '>',
+                    value: 250
+                },
+                style: {
+                    color: 'black',
+                    textOutline: 'none',
+                    fontWeight: 'normal'
+                }
+            }
+        }
+    },
+    series: [{name: 'BAJIO', data: [{name: 'GUANAJUATO', value: 4349}, {name: 'HIDALGO', value: 2895}, {name: 'SAN LUIS POTOSI', value: 1617}, {name: 'AGUASCALIENTES', value: 1239}, {name: 'ZACATECAS', value: 1045}, {name: 'QUERETARO', value: 2140}, {name: 'DISTRITO FEDERAL', value: 4}, {name: 'JALISCO', value: 56}]}, 
+{name: 'METROPOLITANA NORTE', data: [{name: 'ESTADO DE MEXICO', value: 10121}, {name: 'DISTRITO FEDERAL', value: 3846}]}, 
+{name: 'METROPOLITANA SUR', data: [{name: 'DISTRITO FEDERAL', value: 9903}, {name: 'ESTADO DE MEXICO', value: 2351}]}, 
+{name: 'NORESTE', data: [{name: 'COAHUILA', value: 3257}, {name: 'NUEVO LEON', value: 4773}, {name: 'TAMAULIPAS', value: 2897}, {name: 'DURANGO', value: 1123}, {name: 'VERACRUZ', value: 27}]}, 
+{name: 'NOROESTE', data: [{name: 'SINALOA', value: 2417}, {name: 'CHIHUAHUA', value: 3351}, {name: 'SONORA', value: 2436}, {name: 'BAJA CALIFORNIA', value: 2671}, {name: 'BAJA CALIFORNIA SUR', value: 1275}]}, 
+{name: 'OCCIDENTE', data: [{name: 'MICHOACAN', value: 3145}, {name: 'JALISCO', value: 7772}, {name: 'NAYARIT', value: 1018}, {name: 'COLIMA', value: 711}, {name: 'GUANAJUATO', value: 29}, {name: 'Jalisco', value: 21}]}, 
+{name: 'SUR', data: [{name: 'PUEBLA', value: 4092}, {name: 'VERACRUZ', value: 5038}, {name: 'TLAXCALA', value: 753}, {name: 'GUERRERO', value: 1520}, {name: 'OAXACA', value: 1759}, {name: 'MORELOS', value: 1516}]}, 
+{name: 'SURESTE', data: [{name: 'YUCATAN', value: 1687}, {name: 'TABASCO', value: 1633}, {name: 'QUINTANA ROO', value: 2034}, {name: 'CHIAPAS', value: 1922}, {name: 'CAMPECHE', value: 721}]}] 
+});
+
+</script>
