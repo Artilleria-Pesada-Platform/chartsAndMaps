@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cajeros</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <style>
+       #gmap {
+          height: 100%;
+        }
+        html,
+        body {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+        }
+    </style>
+  </head>
+  <body>
+   <div id="gmap"></div>
+   <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+   <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyChhaV-njgLQDbhsbeXKweSpyizRa1ZiRA&callback=initMap"
+      async
+    ></script>
+<script>
+var mymap;
+var markers = [];
+function initMap() {
+    var centerpoint = { lat: 24.926677256565032, lng: -103.17133038381827}; 
+    mymap = new google.maps.Map(document.getElementById('gmap'), {
+        zoom: 4,
+        center: centerpoint
+    });
+    procesarDatos("data");
+}//initMap
+function procesarDatos(allData){
+    fetch('fallaATM.json')
+    .then(response => response.json())
+    .then(data => {
+        cajerosFallas = data;
+    })
+    .then(() => console.log("Cargado"))
+    .then(() => {
+    cajerosFallas.fallasATM.forEach(place => {
+        const lat = place.lat;
+        const lng = place.lng;
+        createMarker("Nombre cajero - Modelo", "Direccion con ciudad y estado", "Estatus", lat, lng);           
+    })  
+    console.log(markers);
+    createCluster();
+    })
+    
+}  //Procesar datos
+
+function createCluster(){
+    var mcluster =new markerClusterer.MarkerClusterer( {map:mymap , markers: markers});
+ }
+
+function createMarker(nombre, direccion, estatus, latstr, lngstr) {
+    var cadena = "<b>" + nombre + "</b><br><br><i>" + direccion + "</i><br><br>" + estatus;
+    var latLng = { lat: Number(latstr) , lng: Number(lngstr)};
+    var infowindow = new google.maps.InfoWindow({
+      content: cadena,
+  });
+ var marker = new google.maps.Marker({
+     position: latLng,
+     map: mymap,
+     title: name
+ });
+markers.push(marker);
+console.log("added marker to map" + name);
+  marker.addListener("click", () => {
+    infowindow.open({
+      anchor: marker,
+      map: mymap,
+      shouldFocus: false,
+    });
+  });    
+} //createMarker
+    </script>   
+  </body>
+</html>
