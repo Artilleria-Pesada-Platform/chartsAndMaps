@@ -1,0 +1,286 @@
+<html>
+    <head>
+        <link REL=StyleSheet href="_css/estiloAnalista.css" type="text/css" media=screen>
+
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+        <script src="https://code.highcharts.com/modules/export-data.js"></script>
+        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+        <script src="https://code.highcharts.com/highcharts-more.js"></script>
+        <style>
+            /* Always set the map height explicitly to define the size of the div
+             * element that contains the map. */
+            #map {
+              width:650px;
+              height: 400px;
+            }
+            /* Optional: Makes the sample page fill the window. */
+            html, body {
+              
+              margin: 0;
+              padding: 0;
+            }
+          </style>  
+    </head>        
+    <bod>
+        <figure class="highcharts-figure">
+            <div id="top5Trabajadores"></div>
+        </figure>
+        <figure class="highcharts-figure">
+            <div id="fallasPorMarca"></div>
+        </figure>
+        
+        <figure class="highcharts-figure">
+            <div id="top5Fallas"></div>
+        </figure>
+        
+        <figure class="highcharts-figure">
+            <div id="FallasporTipo"></div>
+        </figure>
+        <table>
+            <tr>
+                <td>Cajero</td> <td>Modelo</td> <td>Ciudad</td> <td>Estado</td>
+            </tr>
+            <tr>
+                <td>8159</td> <td>NEXTGEN-5500</td> <td>MEZQUITIC</td> <td>JALISCO</td>
+            </tr>            
+            <tr>
+                <td>7251</td> <td>SS23</td> <td>ENSENADA</td> <td>BAJA CALIFORNIA</td>
+            </tr> 
+            <tr>
+                <td>5640</td> <td>NEXTGEN-5500</td> <td>TEPOTZOTLAN</td> <td>ESTADO DE MEXICO</td>
+            </tr>   
+            <tr>
+                <td>240</td> <td>PILOT-SUV-280</td> <td>CIUDAD DE MEXICO</td> <td>DISTRITO FEDERAL</td>
+            </tr>   
+            <tr>
+                <td>8895</td> <td>CINEO2080</td> <td>GUADALAJARA</td> <td>JALISCO</td>
+            </tr>   
+            <tr>
+                <td>E332</td> <td>OPTEVA-868</td> <td>GUADALAJARA</td> <td>JALISCO</td>
+            </tr>   
+            <tr>
+                <td>D562</td> <td>H34-XM</td> <td>GOMEZ PALACIO</td> <td>DURANGO</td>
+            </tr>   
+            <tr>
+                <td>5920</td> <td>SS23</td> <td>CIUDAD DE MEXICO</td> <td>DISTRITO FEDERAL</td>
+            </tr>   
+            <tr>
+                <td>5767</td> <td>OPTEVA-522</td> <td>CHICONTEPEC</td> <td>VERACRUZ</td>
+            </tr>   
+            <tr>
+                <td>D027</td> <td>CINEO2080</td> <td>CIUDAD DE MEXICO</td> <td>DISTRITO FEDERAL</td>
+            </tr>                                                                                                                 
+        </table>     
+    </body>        
+</html>    
+<script>
+var pieColors = ["#C98200", "#063978", "#85d5e6", "#78909c", "#ffab40", "#0097a7", "#01224A", "#1D69C4", "#FDF7EB", "#5E3F05"]
+Highcharts.chart('top5Trabajadores', {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Top 5 trabajadores'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            colors: pieColors,
+            dataLabels: {
+                enabled: false
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'MIGUEL ANGEL ROJAS MUNOZ',
+        y: 635,
+        data:[{
+            name: 'JOSE LUIS SOLER GARRIDO',
+            y: 642
+            }, {
+            name: 'JOSE ORTIZ LOPEZ',
+            y: 644
+            }, {
+            name: 'MARTA GONZALEZ HERNANDEZ',
+             y: 646
+            }, {
+            name: 'PABLO MORENO RUIZ',
+             y: 648
+            }]
+    }]
+});
+
+Highcharts.chart('fallasPorMarca', {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Total Fallas por marca'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            colors: pieColors,
+            dataLabels: {
+                enabled: false
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'Depositos',
+        colorByPoint: true,
+        data:[{
+  name: 'GRG',
+  y: 18214
+}, {
+  name: 'DIEBOLD',
+  y: 44878
+}, {
+  name: 'WINCOR',
+  y: 26435
+}, {
+  name: 'NCR',
+  y: 9637
+}]
+    }]
+});
+
+Highcharts.chart('FallasporTipo', {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Retiros por división'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            colors: pieColors,
+            dataLabels: {
+                enabled: false
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'Retiros',
+        colorByPoint: true,
+        data:[{
+  name: 'OCCIDENTE',
+  y: 143340
+}, {
+  name: 'METROPOLITANA NORTE',
+  y: 160955
+}, {
+  name: 'NOROESTE',
+  y: 140101
+}, {
+  name: 'SURESTE',
+  y: 94646
+}, {
+  name: 'SUR',
+  y: 149014
+}, {
+  name: 'METROPOLITANA SUR',
+  y: 145509
+}, {
+  name: 'BAJIO',
+  y: 130346
+}, {
+  name: 'NORESTE',
+  y: 143709
+}]
+    }]
+});
+
+Highcharts.chart('top5Fallas', {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Estados con mas transacciones'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            colors: pieColors,
+            dataLabels: {
+                enabled: false
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'Fallas',
+        colorByPoint: true,
+        data:[{
+  name: 'Jalisco',
+  y: 420
+}, {
+  name: 'COLIMA',
+  y: 7972
+}, {
+  name: 'TLAXCALA',
+  y: 9436
+}, {
+  name: 'CAMPECHE',
+  y: 11368
+}, {
+  name: 'NAYARIT',
+  y: 13511
+}]
+    }]
+});
+
+</script>
