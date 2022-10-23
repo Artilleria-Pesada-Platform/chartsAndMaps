@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <!-- jsFiddle will insert css and js -->
+    <style>
+/* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+       #gmap {
+  height: 100%;
+}
+
+/* Optional: Makes the sample page fill the window. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+    </style>
+  </head>
+  <body>
+   <div id="gmap"></div>
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
+
+    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyChhaV-njgLQDbhsbeXKweSpyizRa1ZiRA&callback=initMap&v=weekly&channel=2"
+      async
+    ></script>
+    <script>
+   var mymap;
+var markers = [];
+function initMap() {
+    var centerpoint = { lat: 40.7127753, lng: -74.0059728 }; //centered around New York City
+    mymap = new google.maps.Map(document.getElementById('gmap'), {
+        zoom: 4,
+        center: centerpoint
+    });
+processCSV("data");
+}
+//var data = '"","New York","New York^ NY","516-555-5555",21.881599, -102.296829\n"","Newark","Newark^ NJ","201-555-5555",40.735657, -74.1723667';
+
+
+
+function processCSV1(allData){
+   console.log(allData);
+      const rows = allData.split('\n');
+      var storename, storephone, storeaddress, storelat, storelng;
+  
+      for(let i=0; i<rows.length; i++){
+        var line = rows[i];
+        storename = line.split(",")[1];
+        storephone = line.split(",")[3];
+        storeaddress = String(line.split(",")[2]);
+        storeaddress = replaceAll(storeaddress, "^", ",");
+        storelat = line.split(",")[4];
+        storelng = line.split(",")[5];
+        createMarker(storename, storephone, storeaddress, storelat, storelng);
+      }
+      console.log("markers.length="+markers.length)
+      createCluster();
+}
+
+function processCSV(allData){
+    fetch('fallaATM.json')
+    .then(response => response.json())
+    .then(data => {
+        cajerosFallas = data;
+    })
+    .then(() => console.log("Cargado"))
+    .then(() => {
+    cajerosFallas.fallasATM.forEach(place => {
+        const lat = place.lat;
+        const lng = place.lng;
+        createMarker("storename", "storephone", "storeaddress", lat, lng);    
+       /* var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(lat, lng),            
+            map: mymap
+        });*/
+        //markers.push(marker);
+        
+    })  
+    console.log(markers)
+    })
+
+}
+
+function replaceAll(string, search, replace) {
+  return string.split(search).join(replace);
+}
+function createCluster(){
+    var mcluster =new markerClusterer.MarkerClusterer( {map:mymap , markers: markers});
+   
+ }
+function createMarker(name, phone, address, latstr, lngstr) {
+ var contentString = "<b>" + name + "</b><br><br><i>" + phone + "</i><br><br>" + address;
+ var latLng = { lat: Number(latstr) , lng: Number(lngstr)};
+
+ var infowindow = new google.maps.InfoWindow({
+    content: contentString,
+  });
+ var marker = new google.maps.Marker({
+     position: latLng,
+     map: mymap,
+     title: name
+ });
+markers.push(marker);
+console.log("added marker to map" + name);
+  marker.addListener("click", () => {
+    infowindow.open({
+      anchor: marker,
+      map: mymap,
+      shouldFocus: false,
+    });
+  });    
+}
+/* storename = line.split(",")[1];
+        storephone = line.split(",")[3];
+        storeaddress = String(line.split(",")[2]);
+        storeaddress = replaceAll(storeaddress, "^", ",");
+        storelat = line.split(",")[4];
+        storelng = line.split(",")[5];
+        createMarker(storename, storephone, storeaddress, storelat, storelng);
+*/
+
+
+
+    </script>   
+  </body>
+</html>

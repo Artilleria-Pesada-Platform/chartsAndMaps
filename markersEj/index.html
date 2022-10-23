@@ -1,0 +1,106 @@
+
+<html>
+  <head>
+    <title>Simple Map</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+       }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+
+  </head>
+  <body>
+    <div id="gmap"></div>
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyChhaV-njgLQDbhsbeXKweSpyizRa1ZiRA&callback=initMap&v=weekly&channel=2"
+      async
+    ></script>    
+    <script>  
+       var mymap;
+       var markers = [];  
+    function initMap() {        
+        mymap = new google.maps.Map(document.getElementById('gmap'), {
+            zoom: 5,
+            center: {lat: 24.926677256565032, lng: -103.17133038381827}
+        });
+    
+        
+     var cajerosFallas;
+
+
+    fetch('fallaATM.json')
+    .then(response => response.json())
+    .then(data => {
+        cajerosFallas = data;
+    })
+    .then(() => console.log("Cargado"))
+    .then(() => {
+    cajerosFallas.fallasATM.forEach(place => {
+        const lat = place.lat;
+        const lng = place.lng;    
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(lat, lng),            
+            map: mymap
+        });
+        markers.push(marker);
+        
+    })  
+    console.log(markers)
+    })
+
+
+
+    /*new markerClusterer.MarkerClusterer({
+        map,
+        markers,
+        imagePath: "img/m"
+    });*/
+    var mcluster = new markerClusterer.MarkerClusterer({
+    map: mymap,
+    markers: markers
+  });
+   //var markerCluster = new markerClusterer.MarkerClusterer(map,markers, {imagePath: "img/m"});
+
+  
+
+/*
+    fetch('fallaATM.json')
+    .then(response => response.json())
+    .then(data => {
+        cajerosFallas = data;
+    })
+    .then(() => console.log("Cargado"));
+    console.log(cajerosFallas)
+
+    cajerosFallas.forEach(place => {
+    const lat = lat;
+    const lng = lng;
+    let marker = new google.maps.Marker({
+        position: new google.maps.LatLng(lat, lng),
+        map: map
+    });
+})
+
+*/    
+    }          
+    </script>
+
+
+
+        
+
+  </body>
+</html>
